@@ -1,4 +1,6 @@
 run_analysis <- function(downloadDataset=FALSE) {
+    library(dplyr)
+    
     # Path to the directory under which the dataset is located
     archiveRoot <- "UCI HAR Dataset"
     
@@ -23,15 +25,16 @@ run_analysis <- function(downloadDataset=FALSE) {
     # featureNames = gsub("\\s|\\d|\\(|\\)","", featureNames)
     
     #
-    # Generate a list of features to keep, i.e. the means and standard deviations
-    # (To do that, we check whether the field name contains "mean()" or "std()")
+    # Generate a list of features to keep, i.e. "the measurements on the mean
+    # and standard deviation for each measurement" as defined in the assignment.
     #
-    keepFeature = grepl("mean\\(\\)|std\\(\\)", featureNames)
-    
+    # We interpret this as:
+    # - field name beginning with t (because the others are not measurement, but
+    #   are derived from the measurements mathematically)
+    # - field name containing "mean()" or "std()" (so only the means and 
+    #   standard deviations)
     #
-    #
-    #
-    featureNames = rename_features(featureNames)
+    keepFeature = grepl("^\\d+\\s+t(\\w+?)[^(Mag|Jerk)]-(mean\\(\\)|std\\(\\))", featureNames)
     
     #
     # Read train and test set and merge them (see read_dataset.R for details on
@@ -46,6 +49,21 @@ run_analysis <- function(downloadDataset=FALSE) {
     #
     dataset$activity <- factor(dataset$activity, activityLabels[,1], activityLabels[,2])
     
-    dataset
+    #
+    # Tidy up the label names
+    #
+    colnames(dataset) <- rename_features(colnames(dataset))
     
+    #
+    # Average each variable for each activity and each subject using a dplyr pipeline
+    #
+    averages <- dataset %>% group_by(Activity, Subject) %>% summarise_each(funs(mean(., na.rm=TRUE)))
+    
+    #
+    # Save the data into a set of CSV files
+    #
+    write.csv(dataset, "dataset.csv")
+    write.csv(averages, "averages.csv")
+    
+    averages
 }
