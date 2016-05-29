@@ -1,3 +1,11 @@
+##
+## Used by run_analysis.R: Reads a single datasets under 'rootDir' as specified 
+## by the variable 'setName' -- typically 'train' or 'test'. The names of the 
+## feature columns (i.e. the ones in the X_ file) are passed as a list in the
+## 'featureNames' variable, and 'keepFeature' contains, for each feature, a
+## logical value specifying whether that column should be contained in the 
+## result.
+##
 read_dataset <- function(rootDir, setName, featureNames, keepFeature) {
     
     # Read the data set, and keep only the specified columns

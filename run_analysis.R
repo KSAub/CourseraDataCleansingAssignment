@@ -1,3 +1,9 @@
+##
+## Getting and Cleaning Data Course Project: Reads the datasets specficied in 
+## the assignment, downloading it if it doesn't exist. Merges the datasets and 
+## filters the columns as specifies, calculates the averages grouped by Subject 
+## and Activity, and writes the result to text files.
+##
 run_analysis <- function(downloadDataset=FALSE) {
     library(dplyr)
     
@@ -22,15 +28,15 @@ run_analysis <- function(downloadDataset=FALSE) {
     featureNames = readLines(file.path(archiveRoot, "features.txt"))
     activityLabels = read.delim(file.path(archiveRoot, "activity_labels.txt"), FALSE, "")
     
-    # featureNames = gsub("\\s|\\d|\\(|\\)","", featureNames)
-    
     #
     # Generate a list of features to keep, i.e. "the measurements on the mean
     # and standard deviation for each measurement" as defined in the assignment.
     #
     # We interpret this as:
     # - field name beginning with t (because the others are not measurement, but
-    #   are derived from the measurements mathematically)
+    #   rather are derived from the measurements mathematically)
+    # - fields not containing "Mag" or "Jerk" (since the Magnitudes and Jerk 
+    #   signals are also derived from the measurements as per features_info.txt)
     # - field name containing "mean()" or "std()" (so only the means and 
     #   standard deviations)
     #
@@ -57,13 +63,13 @@ run_analysis <- function(downloadDataset=FALSE) {
     #
     # Average each variable for each activity and each subject using a dplyr pipeline
     #
-    averages <- dataset %>% group_by(Activity, Subject) %>% summarise_each(funs(mean(., na.rm=TRUE)))
+    averages <- dataset %>% group_by(Activity, Subject) %>% summarise_each(funs(mean(., na.rm=TRUE))) %>% as.data.frame()
     
     #
     # Save the data into a set of CSV files
     #
-    write.csv(dataset, "dataset.csv")
-    write.csv(averages, "averages.csv")
+    write.table(dataset, "dataset.csv", row.name=FALSE)
+    write.table(averages, "averages.csv", row.name=FALSE)
     
     averages
 }
